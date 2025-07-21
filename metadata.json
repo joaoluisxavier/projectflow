@@ -1,0 +1,11 @@
+
+{
+  "name": "ProjectFlow - Client & Admin Portal (Supabase)",
+  "description": "A comprehensive portal for clients to track their custom furniture projects and for administrators to manage all project details, from inception to completion. This version uses Supabase for the backend.",
+  "requestFramePermissions": [],
+  "env": [
+    "SUPABASE_URL",
+    "SUPABASE_ANON_KEY"
+  ],
+  "prompt": "Please provide your Supabase Project URL and Supabase Anon Key in the environment variables tab to connect the application to your database."
+}
