@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useData } from '../../hooks/useDataContext';
 import { Client, Project, ProjectStatus, AssistanceRequest, Admin } from '../../types';
@@ -37,7 +36,7 @@ const AdminDashboard: React.FC = () => {
   const handleAddNewProject = (forcedClientUid?: string) => {
     setEditingProject(null);
     if(forcedClientUid) {
-      setEditingProject({ clientUid: forcedClientUid } as any);
+      setEditingProject({ clientuid: forcedClientUid } as any);
     }
     setIsProjectModalOpen(true);
   };
@@ -89,18 +88,18 @@ const AdminDashboard: React.FC = () => {
   if (view.type === 'clientProjects' && view.clientUid) {
      return (
         <div className="space-y-6">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 md:space-x-4">
                  <button onClick={() => setView({type: 'main'})} className="p-2 rounded-full hover:bg-gray-200">
                     <ArrowLeftIcon />
                 </button>
-                <h2 className="text-3xl font-bold text-gray-800">
+                <h2 className="text-xl md:text-3xl font-bold text-gray-800">
                     Projetos de <span className="text-teal-600">{view.clientName}</span>
                 </h2>
             </div>
             <div className="flex justify-end mb-4">
                 <button onClick={() => handleAddNewProject(view.clientUid)} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
                     <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
-                    Novo Projeto para este Cliente
+                    Novo Projeto para Cliente
                 </button>
             </div>
             {loading ? (
@@ -150,9 +149,10 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold text-gray-800">Painel do Administrador</h2>
+      <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Painel do Administrador</h2>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Cards Responsivos */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map(stat => (
           <div key={stat.name} className={`p-6 rounded-lg shadow-lg text-white ${stat.color}`}>
             <p className="text-sm font-medium opacity-80">{stat.name}</p>
@@ -162,35 +162,36 @@ const AdminDashboard: React.FC = () => {
       </div>
       
       <div>
+        {/* Navegação de Abas Responsiva */}
         <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+            <nav className="-mb-px flex space-x-4 sm:space-x-8 overflow-x-auto" aria-label="Tabs">
                 <button
                     onClick={() => setActiveTab('projects')}
-                    className={`${activeTab === 'projects' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm inline-flex items-center`}
+                    className={`${activeTab === 'projects' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} flex-shrink-0 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm inline-flex items-center`}
                 >
                     <BriefcaseIcon className="mr-2"/>
-                    Gerenciar Projetos
+                    Projetos
                 </button>
                 <button
                     onClick={() => setActiveTab('clients')}
-                    className={`${activeTab === 'clients' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm inline-flex items-center`}
+                    className={`${activeTab === 'clients' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} flex-shrink-0 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm inline-flex items-center`}
                 >
                     <UserGroupIcon className="mr-2"/>
-                    Gerenciar Clientes
+                    Clientes
                 </button>
                  <button
                     onClick={() => setActiveTab('assistance')}
-                    className={`${activeTab === 'assistance' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm inline-flex items-center`}
+                    className={`${activeTab === 'assistance' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} flex-shrink-0 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm inline-flex items-center`}
                 >
                     <WrenchScrewdriverIcon className="mr-2"/>
-                    Assistência Técnica
+                    Assistência
                 </button>
                  <button
                     onClick={() => setActiveTab('admins')}
-                    className={`${activeTab === 'admins' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm inline-flex items-center`}
+                    className={`${activeTab === 'admins' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} flex-shrink-0 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm inline-flex items-center`}
                 >
                     <ShieldCheckIcon className="mr-2"/>
-                    Gerenciar Administradores
+                    Admins
                 </button>
             </nav>
         </div>

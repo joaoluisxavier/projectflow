@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useData } from '../../hooks/useDataContext';
 import LoadingSpinner from '../common/LoadingSpinner';
@@ -42,30 +41,42 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ clientUid }) => {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-3xl font-bold text-gray-800">Seja bem-vindo, {client.name.split(' ')[0]}!</h2>
-        <p className="mt-1 text-lg text-gray-600">Acompanhe aqui o andamento dos seus projetos.</p>
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Seja bem-vindo, {client.name.split(' ')[0]}!</h2>
+        <p className="mt-1 text-base md:text-lg text-gray-600">Acompanhe aqui o andamento dos seus projetos.</p>
       </div>
 
-      <ClientInfoPanel client={client} />
-      
-      {loading && !projects.length ? (
-         <div className="text-center py-16 bg-white rounded-lg shadow">
-            <LoadingSpinner />
-            <p className="mt-4 text-gray-500">Carregando seus projetos...</p>
+      {/* Grid Responsivo para Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Coluna da Esquerda (Informações e Contrato) */}
+        <div className="lg:col-span-1 space-y-8">
+          <ClientInfoPanel client={client} />
+          {/* Se você tiver uma seção de contrato, ela ficaria aqui */}
         </div>
-      ) : clientProjects.length > 0 ? (
-        <div className="space-y-6">
-          <h3 className="text-2xl font-bold text-gray-800">Meus Projetos</h3>
-          {clientProjects.map(project => (
-            <ProjectDetails key={project.id} project={project} onRequestAssistance={handleRequestAssistance}/>
-          ))}
+        
+        {/* Coluna da Direita (Projetos) */}
+        <div className="lg:col-span-2">
+            {loading && !projects.length ? (
+                <div className="text-center py-16 bg-white rounded-lg shadow">
+                    <LoadingSpinner />
+                    <p className="mt-4 text-gray-500">Carregando seus projetos...</p>
+                </div>
+            ) : clientProjects.length > 0 ? (
+                <div className="space-y-6">
+                <h3 className="text-xl md:text-2xl font-bold text-gray-800">Meus Projetos</h3>
+                {clientProjects.map(project => (
+                    <ProjectDetails key={project.id} project={project} onRequestAssistance={handleRequestAssistance}/>
+                ))}
+                </div>
+            ) : (
+                <div className="text-center py-16 bg-white rounded-lg shadow">
+                <h3 className="text-xl font-medium text-gray-800">Nenhum projeto encontrado</h3>
+                <p className="mt-2 text-gray-500">Você ainda não possui projetos conosco.</p>
+                </div>
+            )}
         </div>
-      ) : (
-        <div className="text-center py-16 bg-white rounded-lg shadow">
-          <h3 className="text-xl font-medium text-gray-800">Nenhum projeto encontrado</h3>
-          <p className="mt-2 text-gray-500">Você ainda não possui projetos conosco.</p>
-        </div>
-      )}
+
+      </div>
 
       {selectedProjectForAssistance && (
         <AssistanceModal 

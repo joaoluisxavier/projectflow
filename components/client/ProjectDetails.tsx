@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Project, FileInfo, AssistanceRequest, AssistanceStatus, ProjectStatus } from '../../types';
 import ProgressBar from '../common/ProgressBar';
@@ -32,22 +31,41 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onRequestAssis
   const currentStatusIndex = PROJECT_STATUS_ORDER.indexOf(project.status);
   const canShowDate = currentStatusIndex >= measurementDoneIndex;
 
+   const formatDate = (dateString: string) => {
+      if (!dateString) return "Data Inválida";
+      try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return 'Data Inválida';
+        return date.toLocaleDateString('pt-BR');
+      } catch (error) { return 'Data Inválida'; }
+  };
+  
+   const formatDateWithTimezone = (dateString: string) => {
+      if (!dateString) return "Data Inválida";
+      try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return 'Data Inválida';
+        return date.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+      } catch (error) { return 'Data Inválida'; }
+  };
+
   const FileItem: React.FC<{file: FileInfo}> = ({ file }) => (
     <a href={file.url} download={file.name} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors">
         <div className="flex flex-col">
-            <span className="font-medium text-sm text-gray-800">{file.name}</span>
-            <span className="text-xs text-gray-500">Upload em: {new Date(file.uploadedAt).toLocaleDateString('pt-BR')}</span>
+            <span className="font-medium text-sm text-gray-800 truncate">{file.name}</span>
+            <span className="text-xs text-gray-500">Upload em: {formatDate(file.uploadedAt)}</span>
         </div>
-        <DownloadIcon className="h-5 w-5 text-teal-600"/>
+        <DownloadIcon className="h-5 w-5 text-teal-600 flex-shrink-0 ml-2"/>
     </a>
   );
 
   return (
     <div className="bg-white shadow-lg rounded-xl overflow-hidden transition-shadow hover:shadow-2xl">
-      <div className="p-6">
-        <div className="flex flex-col md:flex-row justify-between md:items-center">
-          <h3 className="text-2xl font-bold text-gray-900">{project.name}</h3>
-          <p className="text-sm text-gray-500 mt-1 md:mt-0">Criado em: {new Date(project.createdAt).toLocaleDateString('pt-BR')}</p>
+      <div className="p-4 md:p-6">
+        {/* Cabeçalho do Card Responsivo */}
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center">
+          <h3 className="text-xl md:text-2xl font-bold text-gray-900">{project.name}</h3>
+          <p className="text-sm text-gray-500 mt-1 sm:mt-0">Criado em: {formatDate(project.created_at)}</p>
         </div>
         <div className="mt-4">
           <ProgressBar status={project.status} />
@@ -57,46 +75,45 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onRequestAssis
         )}
       </div>
 
-      <div className="px-6 pb-6 space-y-6">
-        {/* Photo Gallery */}
+      <div className="px-4 md:px-6 pb-6 space-y-6">
+        {/* Galeria Responsiva */}
         {photos.length > 0 && (
           <div>
             <h4 className="text-lg font-semibold text-gray-800 mb-3">Fotos do Projeto</h4>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {photos.map(photo => (
-                <a key={photo.id} href={photo.url} target="_blank" rel="noopener noreferrer" className="aspect-w-1 aspect-h-1 block">
-                  <img src={photo.url} alt={photo.name} className="object-cover rounded-lg shadow-md w-full h-full" />
+                <a key={photo.id} href={photo.url} target="_blank" rel="noopener noreferrer" className="aspect-w-1 aspect-h-1 block group">
+                  <img src={photo.url} alt={photo.name} className="object-cover rounded-lg shadow-md w-full h-full transition-transform group-hover:scale-105" />
                 </a>
               ))}
             </div>
           </div>
         )}
 
-        {/* Project Info */}
+        {/* Info do Projeto Responsivo */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-teal-50/50 p-4 rounded-lg">
-            <div>
+            <div className="text-center md:text-left">
                 <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Valor do Projeto</h4>
                 <p className="text-lg font-bold text-teal-800">
                     {project.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 </p>
             </div>
-            <div>
+            <div className="text-center md:text-left">
                 <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Condição de Pagamento</h4>
-                <p className="text-lg font-medium text-gray-700">{project.paymentCondition}</p>
+                <p className="text-lg font-medium text-gray-700">{project.payment_condition}</p>
             </div>
-            <div>
+            <div className="text-center md:text-left">
                 <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Prazo de Entrega</h4>
-                {canShowDate && project.deliveryDate ? (
+                {canShowDate && project.delivery_date ? (
                     <p className="text-lg font-medium text-gray-700">
-                        {new Date(project.deliveryDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
+                        {formatDateWithTimezone(project.delivery_date)}
                     </p>
                 ) : (
-                    <p className="text-sm font-medium text-gray-500 italic">Aguardando caderno técnico aprovado</p>
+                    <p className="text-sm font-medium text-gray-500 italic">Aguardando aprovação</p>
                 )}
             </div>
         </div>
         
-        {/* Assistance Requests */}
         {projectRequests.length > 0 && (
             <div>
                 <h4 className="text-lg font-semibold text-gray-800 mb-3">Minhas Solicitações de Assistência</h4>
@@ -106,9 +123,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onRequestAssis
                            <div className="flex justify-between items-start">
                                 <div>
                                     <p className="text-sm text-gray-600">
-                                        Solicitado em: {new Date(req.createdAt).toLocaleDateString('pt-BR')}
+                                        Solicitado em: {formatDate(req.created_at)}
                                     </p>
-                                    <p className="mt-1 font-medium text-gray-800">{req.issue}</p>
+                                    <p className="mt-1 font-medium text-gray-800">{req.description}</p>
                                 </div>
                                 <AssistanceStatusBadge status={req.status} />
                            </div>
@@ -124,8 +141,8 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project, onRequestAssis
             </div>
         )}
 
-        {/* Documents & Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
+        {/* Documentos e Ações Responsivo */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
             <div>
                 <h4 className="text-lg font-semibold text-gray-800 mb-3">Documentos e Relatórios</h4>
                 {documents.length > 0 ? (
