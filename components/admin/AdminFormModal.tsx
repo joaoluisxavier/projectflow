@@ -12,8 +12,7 @@ interface AdminFormModalProps {
 }
 
 const AdminFormModal: React.FC<AdminFormModalProps> = ({ isOpen, onClose, admin }) => {
-  // ATUALIZADO: addUserToDb não é mais necessário aqui
-  const { loading, updateUserInDb } = useData(); 
+  const { loading, addUserToDb, updateUserInDb } = useData();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -51,30 +50,30 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({ isOpen, onClose, admin 
 
     try {
       if (isEditing && admin) {
-        // A lógica de edição continua a mesma, atualizando apenas os dados do perfil
+        // A lógica de edição continua a mesma
         await updateUserInDb(admin.id, { name: formData.name });
       } else {
         
-        // ### CORREÇÃO FINAL: Chamar a Edge Function ###
-        // Em vez de chamar auth.admin.createUser diretamente, invocamos a função que publicamos.
-        const { error: functionError } = await supabase.functions.invoke('create-user', {
-          body: { 
+        // ### CÓDIGO CORRIGIDO E SIMPLIFICADO ###
+        // Usamos a função signUp, que funcionará agora que as RLS estão corretas.
+        // A chave é o 'data' adicional para o nome e a role.
+        const { data, error: authError } = await supabase.auth.signUp({
             email: formData.email,
             password: formData.password,
-            name: formData.name,
-            role: 'admin' 
-          }
+            options: {
+                data: {
+                    full_name: formData.name, // Passa o nome para o trigger
+                    role: 'admin'            // Define a role para o trigger
+                }
+            }
         });
-
-        if (functionError) {
-          // O erro que vem da Edge Function é mais informativo.
-          throw functionError;
-        }
+        
+        if (authError) throw authError;
+        // Não precisamos mais do addUserToDb, pois o TRIGGER que criamos cuidará disso!
       }
       onClose();
     } catch (err: any) {
-        // O erro agora pode vir da Edge Function, então a mensagem será mais precisa
-        setError(err.message || "Ocorreu um erro. Verifique os dados e tente novamente.");
+        setError(err.message || "Ocorreu um erro. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
@@ -97,7 +96,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({ isOpen, onClose, admin 
             Senha
           </label>
           <input type="password" name="password" id="password" value={formData.password} onChange={handleChange} required={!isEditing} disabled={isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" />
-           {isEditing && <p className="mt-2 text-sm text-gray-500">A senha não pode ser alterada. O usuário deve usar a função "Esqueceu a senha" se necessário.</p>}
+           {isEditing && <p className="mt-2 text-sm text-gray-500">A senha não pode ser alterada.</p>}
         </div>
        
         <div className="pt-4 flex justify-end space-x-3">
