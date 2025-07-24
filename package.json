@@ -1,4 +1,3 @@
-
 {
   "name": "projectflow-client-admin-portal",
   "private": true,
@@ -30,4 +29,16 @@
     "typescript": "^5.2.2",
     "vite": "^5.2.0"
   }
-}
+}```
+
+---
+
+### **PRÓXIMOS PASSOS IMEDIATOS**
+
+Depois de substituir o conteúdo do `package.json` e **SALVAR O ARQUIVO**, faça o seguinte, exatamente nesta ordem.
+
+**1. Abra o Prompt de Comando (CMD)** e navegue para a pasta `F:\BACKUP\Programa`.
+
+**2. Rode a instalação novamente:**
+```cmd
+npm install

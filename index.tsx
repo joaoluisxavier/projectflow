@@ -1,4 +1,4 @@
-// ----- INÍCIO DO CÓDIGO PARA index.tsx -----
+import './src/index.css'; 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
@@ -15,4 +15,3 @@ root.render(
     <App />
   </React.StrictMode>
 );
-// ----- FIM DO CÓDIGO PARA index.tsx -----
