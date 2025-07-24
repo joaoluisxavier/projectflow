@@ -13,11 +13,7 @@ interface AdminFormModalProps {
 
 const AdminFormModal: React.FC<AdminFormModalProps> = ({ isOpen, onClose, admin }) => {
   const { loading, updateUserInDb } = useData();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-  });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -48,18 +44,18 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({ isOpen, onClose, admin 
       if (isEditing && admin) {
         await updateUserInDb(admin.id, { name: formData.name });
       } else {
-        // CORREÇÃO: Usa signUp, mas envia a role 'admin' nos metadados para o trigger
-        const { error: authError } = await supabase.auth.signUp({
+        // CORREÇÃO: Enviando a role 'admin' para o trigger
+        const { error } = await supabase.auth.signUp({
             email: formData.email,
             password: formData.password,
             options: {
                 data: {
                     name: formData.name,
-                    role: 'admin' // O trigger vai usar este valor
+                    role: 'admin' // O trigger irá ler esta informação
                 }
             }
         });
-        if (authError) throw authError;
+        if (error) throw error;
       }
       onClose();
     } catch (err: any) {

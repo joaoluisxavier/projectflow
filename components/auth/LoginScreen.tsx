@@ -38,19 +38,17 @@ const LoginScreen: React.FC = () => {
         }
         setUiLoading(true);
         try {
-            // CORREÇÃO: Envia nome e telefone nos 'options' para o trigger pegar
-            const { error } = await supabase.auth.signUp({ 
+            // CORRIGIDO: Enviando dados extras para o trigger
+            const { data, error } = await supabase.auth.signUp({ 
                 email, 
                 password,
                 options: {
                     data: {
                         name: name,
                         phone: phone
-                        // A 'role' não é enviada, então o trigger usará 'client' por padrão
                     }
                 }
             });
-
             if (error) throw error;
 
             setMessage('Cadastro realizado! Um link de confirmação foi enviado para o seu e-mail.');
@@ -81,6 +79,7 @@ const LoginScreen: React.FC = () => {
         }
     }
     
+    // ... O resto do arquivo permanece o mesmo ...
     const resetFormState = () => {
         setEmail(''); setPassword(''); setName(''); setPhone(''); setError(''); setMessage('');
     }
@@ -89,7 +88,6 @@ const LoginScreen: React.FC = () => {
         resetFormState();
         setView(newView);
     }
-
     const renderForm = () => {
         if (view === 'signup') {
             return (
