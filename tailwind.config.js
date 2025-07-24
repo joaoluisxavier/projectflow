@@ -1,3 +1,4 @@
+// ----- INÍCIO DO CÓDIGO PARA tailwind.config.js -----
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -9,3 +10,4 @@ export default {
   },
   plugins: [],
 }
+// ----- FIM DO CÓDIGO PARA tailwind.config.js -----
