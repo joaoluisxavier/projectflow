@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { useData } from '../../hooks/useDataContext';
 import { Admin, User } from '../../types';
 import Modal from '../common/Modal';
-import LoadingSpinner from '../common/LoadingSpinner';
+import LoadingSpinner from '../common-Spinner';
 import { supabase } from '../../services/supabase';
 
 interface AdminFormModalProps {
@@ -55,15 +54,24 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({ isOpen, onClose, admin 
             name: formData.name,
             email: formData.email,
         };
-        await updateUserInDb(admin.id, updatedData);
+        // Aqui também seria necessário uma função admin para atualizar o email no Auth,
+        // por isso, normalmente, email não é editável por outro admin.
+        // Focaremos na criação por enquanto.
+        await updateUserInDb(admin.id, { name: updatedData.name });
       } else {
-        const { data, error: authError } = await supabase.auth.signUp({
-            email: formData.email,
-            password: formData.password
-        });
-        if (authError) throw authError;
-        if (!data.user) throw new Error("Criação de usuário falhou.");
         
+        // ### CORREÇÃO PRINCIPAL APLICADA AQUI ###
+        // Usar a função de admin para criar um novo usuário de autenticação
+        const { data, error: authError } = await supabase.auth.admin.createUser({
+            email: formData.email,
+            password: formData.password,
+            email_confirm: true, // Já cria o usuário como confirmado
+        });
+        
+        if (authError) throw authError;
+        if (!data.user) throw new Error("Criação de usuário (auth) falhou.");
+        
+        // Com o usuário de autenticação criado, agora criamos o perfil dele na nossa tabela
         const newUser: User = {
           id: data.user.id,
           role: 'admin',
