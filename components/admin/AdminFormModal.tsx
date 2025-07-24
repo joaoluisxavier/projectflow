@@ -44,14 +44,14 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({ isOpen, onClose, admin 
       if (isEditing && admin) {
         await updateUserInDb(admin.id, { name: formData.name });
       } else {
-        // CORREÇÃO: Enviando a role 'admin' para o trigger
+        // CORREÇÃO: Enviando dados extras para o trigger
         const { error } = await supabase.auth.signUp({
             email: formData.email,
             password: formData.password,
             options: {
                 data: {
                     name: formData.name,
-                    role: 'admin' // O trigger irá ler esta informação
+                    role: 'admin' // O trigger irá usar este valor
                 }
             }
         });
@@ -59,21 +59,22 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({ isOpen, onClose, admin 
       }
       onClose();
     } catch (err: any) {
-        setError(err.message || "Ocorreu um erro. Tente novamente.");
+        setError(err.message || "Ocorreu um erro.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  return (
+  // ... O resto do JSX não muda, pode copiar do seu original
+return (
     <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? 'Editar Administrador' : 'Adicionar Novo Administrador'}>
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && <p className="text-sm text-red-600 bg-red-100 p-2 rounded-md">{error}</p>}
-         <div>
+        <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nome</label>
           <input type="text" name="name" id="name" value={formData.name} onChange={handleChange} required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" />
         </div>
-         <div>
+        <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
           <input type="email" name="email" id="email" value={formData.email} onChange={handleChange} required disabled={isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" />
         </div>
@@ -82,7 +83,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({ isOpen, onClose, admin 
             Senha
           </label>
           <input type="password" name="password" id="password" value={formData.password} onChange={handleChange} required={!isEditing} disabled={isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" />
-           {isEditing && <p className="mt-2 text-sm text-gray-500">A senha não pode ser alterada.</p>}
+          {isEditing && <p className="mt-2 text-sm text-gray-500">A senha não pode ser alterada.</p>}
         </div>
        
         <div className="pt-4 flex justify-end space-x-3">

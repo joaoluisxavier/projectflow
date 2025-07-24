@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { DataProvider, useData } from './hooks/useDataContext';
 import AdminDashboard from './components/admin/AdminDashboard';
@@ -31,7 +30,8 @@ const AppContent: React.FC = () => {
         return <LoginScreen />;
     }
 
-    const userName = userProfile.name || userProfile.email;
+    // CORREÇÃO: Garante que 'userName' sempre terá um valor antes de ser usado
+    const userName = userProfile?.name || userProfile?.email || '';
 
     return (
         <div className="min-h-screen bg-gray-100 text-gray-800">
@@ -46,7 +46,7 @@ const AppContent: React.FC = () => {
                         </span>
                         <button
                             onClick={handleLogout}
-                            className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                            className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700"
                             aria-label="Logout"
                         >
                            <LogoutIcon className="h-5 w-5"/>
@@ -65,7 +65,6 @@ const AppContent: React.FC = () => {
         </div>
     );
 }
-
 
 const App: React.FC = () => {
   return (
