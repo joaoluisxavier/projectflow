@@ -8,14 +8,11 @@ import { LogoutIcon } from './components/icons/LogoutIcon';
 import { supabase } from './services/supabase';
 
 const AppContent: React.FC = () => {
-    const { authUser, userProfile, loading } = useData();
+    // CORRIGIDO: Não pega mais 'authUser', apenas 'userProfile' e 'loading'
+    const { userProfile, loading } = useData();
 
     const handleLogout = async () => {
-        try {
-            await supabase.auth.signOut();
-        } catch (error) {
-            console.error("Logout failed", error);
-        }
+        await supabase.auth.signOut();
     };
 
     if (loading) {
@@ -23,15 +20,17 @@ const AppContent: React.FC = () => {
              <div className="flex h-screen w-screen items-center justify-center">
                 <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-teal-600"></div>
             </div>
-        )
+        );
     }
 
-    if (!authUser || !userProfile) {
+    // LÓGICA DE RENDERIZAÇÃO SIMPLIFICADA E SEGURA
+    // Se o userProfile não existir, mostra a tela de login. Ponto final.
+    if (!userProfile) {
         return <LoginScreen />;
     }
 
-    // CORREÇÃO: Garante que 'userName' sempre terá um valor antes de ser usado
-    const userName = userProfile?.name || userProfile?.email || '';
+    // Se o código chegou até aqui, é 100% seguro que 'userProfile' existe e não é nulo.
+    const userName = userProfile.name || userProfile.email;
 
     return (
         <div className="min-h-screen bg-gray-100 text-gray-800">
