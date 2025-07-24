@@ -2,7 +2,6 @@ import React from 'react';
 import { DataProvider, useData } from './hooks/useDataContext';
 import AdminDashboard from './components/admin/AdminDashboard';
 import ClientDashboard from './components/client/ClientDashboard';
-import ChatWidget from './components/client/ChatWidget';
 import LoginScreen from './components/auth/LoginScreen';
 import { LogoutIcon } from './components/icons/LogoutIcon';
 import { supabase } from './services/supabase';
@@ -23,14 +22,13 @@ const AppContent: React.FC = () => {
              <div className="flex h-screen w-screen items-center justify-center bg-gray-50">
                 <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-teal-600"></div>
             </div>
-        )
+        );
     }
 
     if (!userProfile) {
         return <LoginScreen />;
     }
 
-    // Código à prova de falhas: garante que 'userName' sempre seja uma string.
     const userName = userProfile.name || userProfile.email || 'Usuário';
 
     return (
@@ -61,7 +59,6 @@ const AppContent: React.FC = () => {
                     <ClientDashboard clientUid={userProfile.id} />
                 )}
             </main>
-            {userProfile.role === 'client' && <ChatWidget />}
         </div>
     );
 }
@@ -74,94 +71,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;```
-
----
-
-### **Passo 3: Substituir o Arquivo `ClientDashboard.tsx`**
-
-Este é o arquivo que causava o erro `split` diretamente. Esta versão é à prova de falhas.
-
-```tsx
-import React, { useState } from 'react';
-import { useData } from '../../hooks/useDataContext';
-import LoadingSpinner from '../common/LoadingSpinner';
-import ProjectDetails from './ProjectDetails';
-import AssistanceModal from './AssistanceModal';
-import { Project, Client } from '../../types';
-import ClientInfoPanel from './ClientInfoPanel';
-
-interface ClientDashboardProps {
-  clientUid: string;
-}
-
-const ClientDashboard: React.FC<ClientDashboardProps> = ({ clientUid }) => {
-  const { userProfile, getProjectsByClient, loading } = useData(); // Removido 'projects' pois 'getProjectsByClient' já usa do contexto
-  const [isAssistanceModalOpen, setIsAssistanceModalOpen] = useState(false);
-  const [selectedProjectForAssistance, setSelectedProjectForAssistance] = useState<Project | null>(null);
-
-  const client = userProfile as Client | null;
-  // Certifique-se que o código não quebre se o perfil ainda estiver carregando
-  const clientProjects = client ? getProjectsByClient(client.id) : [];
-
-  const handleRequestAssistance = (project: Project) => {
-    setSelectedProjectForAssistance(project);
-    setIsAssistanceModalOpen(true);
-  };
-  
-  // O estado de loading principal já está no App.tsx, então podemos simplificar aqui.
-  if (!client) {
-    return (
-        <div className="flex justify-center items-center h-64">
-             <div className="text-center text-red-500">
-                <p>Não foi possível carregar o perfil do cliente.</p>
-             </div>
-        </div>
-    );
-  }
-
-  // Código à prova de falhas para extrair o primeiro nome.
-  const firstName = client.name ? client.name.split(' ')[0] : 'Visitante';
-
-  return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Seja bem-vindo, {firstName}!</h2>
-        <p className="mt-1 text-base md:text-lg text-gray-600">Acompanhe aqui o andamento dos seus projetos.</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1 space-y-8">
-          <ClientInfoPanel client={client} />
-          {/* Adicione a seção do contrato aqui se desejar */}
-        </div>
-        
-        <div className="lg:col-span-2">
-            {clientProjects.length > 0 ? (
-                <div className="space-y-6">
-                <h3 className="text-xl md:text-2xl font-bold text-gray-800">Meus Projetos</h3>
-                {clientProjects.map(project => (
-                    <ProjectDetails key={project.id} project={project} onRequestAssistance={handleRequestAssistance}/>
-                ))}
-                </div>
-            ) : (
-                <div className="text-center py-16 bg-white rounded-lg shadow">
-                <h3 className="text-xl font-medium text-gray-800">Nenhum projeto encontrado</h3>
-                <p className="mt-2 text-gray-500">Você ainda não possui projetos conosco.</p>
-                </div>
-            )}
-        </div>
-      </div>
-
-      {selectedProjectForAssistance && (
-        <AssistanceModal 
-            isOpen={isAssistanceModalOpen}
-            onClose={() => setIsAssistanceModalOpen(false)}
-            project={selectedProjectForAssistance}
-        />
-      )}
-    </div>
-  );
-};
-
-export default ClientDashboard;
+export default App;
