@@ -1,12 +1,8 @@
-
 import React, { useState } from 'react';
 import LoadingSpinner from '../common/LoadingSpinner';
 import { supabase } from '../../services/supabase';
-import { useData } from '../../hooks/useDataContext';
-import { User } from '../../types';
 
 const LoginScreen: React.FC = () => {
-    const { addUserToDb } = useData();
     const [uiLoading, setUiLoading] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -25,7 +21,6 @@ const LoginScreen: React.FC = () => {
         try {
             const { error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) throw error;
-            // onAuthStateChanged in DataProvider will handle the rest
         } catch (err: any) {
             setError(err.message || 'Credenciais inválidas. Por favor, tente novamente.');
         } finally {
@@ -43,23 +38,22 @@ const LoginScreen: React.FC = () => {
         }
         setUiLoading(true);
         try {
-            const { data, error } = await supabase.auth.signUp({ 
+            // CORREÇÃO: Envia nome e telefone nos 'options' para o trigger pegar
+            const { error } = await supabase.auth.signUp({ 
                 email, 
                 password,
+                options: {
+                    data: {
+                        name: name,
+                        phone: phone
+                        // A 'role' não é enviada, então o trigger usará 'client' por padrão
+                    }
+                }
             });
+
             if (error) throw error;
-            if (!data.user) throw new Error("Cadastro falhou, nenhum usuário retornado.");
 
-            const newUser: User = {
-                id: data.user.id,
-                name,
-                email,
-                phone,
-                role: 'client'
-            };
-            await addUserToDb(newUser);
-
-            setMessage('Cadastro realizado! Um link de confirmação foi enviado para o seu e-mail. Por favor, verifique sua caixa de entrada e spam antes de fazer o login.');
+            setMessage('Cadastro realizado! Um link de confirmação foi enviado para o seu e-mail.');
             setView('login');
         } catch (err: any) {
              setError(err.message || 'Ocorreu um erro durante o cadastro.');
@@ -88,12 +82,7 @@ const LoginScreen: React.FC = () => {
     }
     
     const resetFormState = () => {
-        setEmail('');
-        setPassword('');
-        setName('');
-        setPhone('');
-        setError('');
-        setMessage('');
+        setEmail(''); setPassword(''); setName(''); setPhone(''); setError(''); setMessage('');
     }
 
     const switchView = (newView: 'login' | 'signup' | 'reset') => {

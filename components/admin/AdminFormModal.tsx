@@ -12,7 +12,7 @@ interface AdminFormModalProps {
 }
 
 const AdminFormModal: React.FC<AdminFormModalProps> = ({ isOpen, onClose, admin }) => {
-  const { loading, addUserToDb, updateUserInDb } = useData();
+  const { loading, updateUserInDb } = useData();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -27,11 +27,7 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({ isOpen, onClose, admin 
     if (isOpen) {
       setError('');
       if (admin) {
-        setFormData({
-            name: admin.name,
-            email: admin.email,
-            password: '', 
-        });
+        setFormData({ name: admin.name, email: admin.email, password: '' });
       } else {
         setFormData({ name: '', email: '', password: '' });
       }
@@ -50,26 +46,20 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({ isOpen, onClose, admin 
 
     try {
       if (isEditing && admin) {
-        // A lógica de edição continua a mesma
         await updateUserInDb(admin.id, { name: formData.name });
       } else {
-        
-        // ### CÓDIGO CORRIGIDO E SIMPLIFICADO ###
-        // Usamos a função signUp, que funcionará agora que as RLS estão corretas.
-        // A chave é o 'data' adicional para o nome e a role.
-        const { data, error: authError } = await supabase.auth.signUp({
+        // CORREÇÃO: Usa signUp, mas envia a role 'admin' nos metadados para o trigger
+        const { error: authError } = await supabase.auth.signUp({
             email: formData.email,
             password: formData.password,
             options: {
                 data: {
-                    full_name: formData.name, // Passa o nome para o trigger
-                    role: 'admin'            // Define a role para o trigger
+                    name: formData.name,
+                    role: 'admin' // O trigger vai usar este valor
                 }
             }
         });
-        
         if (authError) throw authError;
-        // Não precisamos mais do addUserToDb, pois o TRIGGER que criamos cuidará disso!
       }
       onClose();
     } catch (err: any) {
