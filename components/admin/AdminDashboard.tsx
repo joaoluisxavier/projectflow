@@ -17,7 +17,6 @@ import { ShieldCheckIcon } from '../icons/ShieldCheckIcon';
 import AdminList from './AdminList';
 import AdminFormModal from './AdminFormModal';
 
-
 const AdminDashboard: React.FC = () => {
   const { projects, clients, assistanceRequests, loading } = useData();
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
@@ -54,26 +53,26 @@ const AdminDashboard: React.FC = () => {
   const handleEditClient = (client: Client) => {
     setEditingClient(client);
     setIsClientModalOpen(true);
-  }
+  };
 
   const handleAddNewAdmin = () => {
     setEditingAdmin(null);
     setIsAdminModalOpen(true);
-  }
+  };
 
   const handleEditAdmin = (admin: Admin) => {
     setEditingAdmin(admin);
     setIsAdminModalOpen(true);
-  }
+  };
 
   const handleViewClientProjects = (clientUid: string, clientName: string) => {
     setView({ type: 'clientProjects', clientUid, clientName });
-  }
+  };
 
   const handleManageAssistance = (request: AssistanceRequest) => {
     setManagingAssistance(request);
     setIsAssistanceModalOpen(true);
-  }
+  };
 
   const projectsInProgress = projects.filter(p => p.status !== ProjectStatus.Completed).length;
   const openAssistance = assistanceRequests.filter(ar => ar.status === 'Aberto').length;
@@ -116,7 +115,7 @@ const AdminDashboard: React.FC = () => {
                 forcedClientUid={view.clientUid}
             />
         </div>
-     )
+     );
   }
 
   const renderActiveButton = () => {
@@ -145,13 +144,12 @@ const AdminDashboard: React.FC = () => {
         default:
             return null;
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
       <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Painel do Administrador</h2>
       
-      {/* Cards Responsivos */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map(stat => (
           <div key={stat.name} className={`p-6 rounded-lg shadow-lg text-white ${stat.color}`}>
@@ -162,7 +160,6 @@ const AdminDashboard: React.FC = () => {
       </div>
       
       <div>
-        {/* Navegação de Abas Responsiva */}
         <div className="border-b border-gray-200">
             <nav className="-mb-px flex space-x-4 sm:space-x-8 overflow-x-auto" aria-label="Tabs">
                 <button
