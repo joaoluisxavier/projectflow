@@ -13,7 +13,7 @@ interface ClientFormModalProps {
 }
 
 const ClientFormModal: React.FC<ClientFormModalProps> = ({ isOpen, onClose, client }) => {
-  const { loading, addContractToClient, addUserToDb, updateUserInDb } = useData();
+  const { addContractToClient, updateUserInDb } = useData();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -61,45 +61,40 @@ const ClientFormModal: React.FC<ClientFormModalProps> = ({ isOpen, onClose, clie
 
     try {
       if (isEditing && client) {
-        // CORRIGIDO: A lógica agora está mais limpa e centralizada
-        const updatedData: Partial<User> = {
+        await updateUserInDb(client.id, {
             name: formData.name,
-            email: formData.email,
             phone: formData.phone,
-        };
-        // Primeiro atualiza os dados de texto
-        await updateUserInDb(client.id, updatedData);
+        });
 
-        // SE houver um novo arquivo de contrato, faz o upload e atualiza o perfil NOVAMENTE
         if (contractFile) {
             await addContractToClient(client.id, contractFile);
         }
 
       } else {
-        // A lógica de criação de cliente já estava correta.
+        // ### CORREÇÃO APLICADA AQUI TAMBÉM ###
+        // Agora o formulário de clientes também envia os dados para o Trigger
         const { data, error: authError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
+          options: {
+            data: {
+              name: formData.name,
+              phone: formData.phone,
+              role: 'client'
+            }
+          }
         });
 
         if (authError) throw authError;
-        if (!data.user) throw new Error("Criação de usuário falhou.");
-
-        const newUser: User = {
-          id: data.user.id,
-          role: 'client',
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-        };
-        await addUserToDb(newUser);
+        if (!data.user) throw new Error("A criação de usuário falhou.");
+        
         if (contractFile) {
-          await addContractToClient(newUser.id, contractFile);
+          await addContractToClient(data.user.id, contractFile);
         }
       }
       onClose();
     } catch (err: any) {
-        setError(err.message || "new row violates row-level security policy"); // Mensagem de erro genérica
+        setError(err.message || "Ocorreu um erro ao processar o formulário.");
         console.error(err);
     } finally {
       setIsSubmitting(false);
@@ -110,32 +105,31 @@ const ClientFormModal: React.FC<ClientFormModalProps> = ({ isOpen, onClose, clie
     <Modal isOpen={isOpen} onClose={onClose} title={client ? 'Editar Cliente' : 'Adicionar Novo Cliente'}>
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && <p className="text-sm text-red-600 bg-red-100 p-2 rounded-md">{error}</p>}
-        {/* O resto do JSX do formulário permanece o mesmo... */}
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nome Completo</label>
-          <input type="text" name="name" id="name" value={formData.name} onChange={handleChange} required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm" />
+          <input type="text" name="name" id="name" value={formData.name} onChange={handleChange} required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" />
         </div>
          <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-          <input type="email" name="email" id="email" value={formData.email} onChange={handleChange} required disabled={isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm disabled:bg-gray-100" />
+          <input type="email" name="email" id="email" value={formData.email} onChange={handleChange} required disabled={isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm disabled:bg-gray-100" />
         </div>
          <div>
           <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Telefone</label>
-          <input type="text" name="phone" id="phone" value={formData.phone} onChange={handleChange} required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm" />
+          <input type="text" name="phone" id="phone" value={formData.phone} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" />
         </div>
         <div>
           <label htmlFor="password" className="block text-sm font-medium text-gray-700">
             Senha
           </label>
-          <input type="password" name="password" id="password" value={formData.password} onChange={handleChange} required={!isEditing} disabled={isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm disabled:bg-gray-100" />
-           {isEditing && <p className="mt-2 text-sm text-gray-500">A senha não pode ser alterada. O usuário deve usar a função "Esqueceu a senha" se necessário.</p>}
+          <input type="password" name="password" id="password" value={formData.password} onChange={handleChange} required={!isEditing} minLength={6} disabled={isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm disabled:bg-gray-100" />
+           {isEditing && <p className="mt-2 text-sm text-gray-500">A senha não pode ser alterada.</p>}
         </div>
         <div>
             <label className="block text-sm font-medium text-gray-700">Contrato do Cliente</label>
             <div className="mt-1 flex items-center space-x-4">
-                <label htmlFor="contract-upload" className="cursor-pointer bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 inline-flex items-center">
+                <label htmlFor="contract-upload" className="cursor-pointer bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50">
                     <UploadIcon className="mr-2"/>
-                    {client?.contract ? 'Substituir Contrato' : 'Upload do Contrato'}
+                    Upload
                 </label>
                 <input id="contract-upload" name="contract-upload" type="file" className="sr-only" onChange={handleContractChange} accept=".pdf,.doc,.docx,image/*"/>
                 {contractFile && <span className="text-sm text-gray-600 max-w-xs truncate">{contractFile.name}</span>}
@@ -144,11 +138,11 @@ const ClientFormModal: React.FC<ClientFormModalProps> = ({ isOpen, onClose, clie
         </div>
        
         <div className="pt-4 flex justify-end space-x-3">
-          <button type="button" onClick={onClose} className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+          <button type="button" onClick={onClose} className="bg-white py-2 px-4 border border-gray-300 rounded-md">
             Cancelar
           </button>
-          <button type="submit" disabled={loading || isSubmitting} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:bg-teal-300">
-            {(loading || isSubmitting) ? <LoadingSpinner size="sm"/> : (client ? 'Salvar Alterações' : 'Criar Cliente')}
+          <button type="submit" disabled={isSubmitting} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700">
+            {isSubmitting ? <LoadingSpinner size="sm"/> : (client ? 'Salvar Alterações' : 'Criar Cliente')}
           </button>
         </div>
       </form>
@@ -156,4 +150,19 @@ const ClientFormModal: React.FC<ClientFormModalProps> = ({ isOpen, onClose, clie
   );
 };
 
-export default ClientFormModal;
+export default ClientFormModal;```
+
+---
+
+### **Instruções Finais**
+
+1.  **Execute o SQL:** Complete o Passo 1 no Supabase.
+2.  **Substitua os Arquivos:** Complete os Passos 2 e 3 no seu computador.
+3.  **Salve Tudo:** Certifique-se de salvar os arquivos `AdminFormModal.tsx` e `ClientFormModal.tsx` que você modificou.
+4.  **Publique no Vercel:** Envie suas alterações para o Vercel para que o site seja atualizado com as correções.
+5.  **Teste:**
+    *   Delete o usuário `lukeironworker@gmail.com` do seu banco de dados (`Auth > Users`) para um teste limpo.
+    *   No seu site, faça login como `berryprimor` (seu admin principal).
+    *   Crie um **novo Administrador**.
+    *   Abra uma janela anônima e faça login com o **novo Admin**. O painel deve funcionar sem quebrar.
+    *   Volte para a conta do `berryprimor` e crie um **novo Cliente**. O processo deve funcionar sem erros.

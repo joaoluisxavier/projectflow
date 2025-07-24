@@ -44,14 +44,15 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({ isOpen, onClose, admin 
       if (isEditing && admin) {
         await updateUserInDb(admin.id, { name: formData.name });
       } else {
-        // CORREÇÃO: Enviando dados extras para o trigger
+        // ### AQUI ESTÁ A CORREÇÃO PRINCIPAL ###
+        // Estamos passando NOME e ROLE para o Trigger no Supabase.
         const { error } = await supabase.auth.signUp({
             email: formData.email,
             password: formData.password,
             options: {
                 data: {
-                    name: formData.name,
-                    role: 'admin' // O trigger irá usar este valor
+                    name: formData.name, // <-- O NOME AGORA É ENVIADO
+                    role: 'admin'        // <-- A ROLE DE ADMIN AGORA É ENVIADA
                 }
             }
         });
@@ -59,14 +60,13 @@ const AdminFormModal: React.FC<AdminFormModalProps> = ({ isOpen, onClose, admin 
       }
       onClose();
     } catch (err: any) {
-        setError(err.message || "Ocorreu um erro.");
+        setError(err.message || "Ocorreu um erro ao criar o administrador.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // ... O resto do JSX não muda, pode copiar do seu original
-return (
+  return (
     <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? 'Editar Administrador' : 'Adicionar Novo Administrador'}>
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && <p className="text-sm text-red-600 bg-red-100 p-2 rounded-md">{error}</p>}
@@ -82,16 +82,17 @@ return (
           <label htmlFor="password" className="block text-sm font-medium text-gray-700">
             Senha
           </label>
-          <input type="password" name="password" id="password" value={formData.password} onChange={handleChange} required={!isEditing} disabled={isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" />
+          <input type="password" name="password" id="password" value={formData.password} onChange={handleChange} required={!isEditing} minLength={6} disabled={isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" />
           {isEditing && <p className="mt-2 text-sm text-gray-500">A senha não pode ser alterada.</p>}
+          {!isEditing && <p className="mt-2 text-sm text-gray-500">A senha deve ter no mínimo 6 caracteres.</p>}
         </div>
        
         <div className="pt-4 flex justify-end space-x-3">
           <button type="button" onClick={onClose} className="bg-white py-2 px-4 border border-gray-300 rounded-md">
             Cancelar
           </button>
-          <button type="submit" disabled={loading || isSubmitting} className="inline-flex justify-center py-2 px-4 border border-transparent rounded-md text-white bg-teal-600 hover:bg-teal-700">
-            {(loading || isSubmitting) ? <LoadingSpinner size="sm"/> : (isEditing ? 'Salvar Alterações' : 'Criar Administrador')}
+          <button type="submit" disabled={isSubmitting} className="inline-flex justify-center py-2 px-4 border border-transparent rounded-md text-white bg-teal-600 hover:bg-teal-700">
+            {isSubmitting ? <LoadingSpinner size="sm"/> : (isEditing ? 'Salvar Alterações' : 'Criar Administrador')}
           </button>
         </div>
       </form>
